@@ -48,3 +48,38 @@ params = {'min_impurity_decrease': [0.0001, 0.0002, 0.0003, 0.0004, 0.0005]}
 
 gs = GridSearchCV(DecisionTreeClassifier(random_state=42), params, n_jobs=-1)
 gs.fit(train_input, train_target)
+
+dt = gs.best_estimator_
+print(dt.score(train_input, train_target))
+
+gs = RandomizedSearchCV(DecisionTreeClassifier(splitter='random', random_state=42), params,
+                        n_iter=100, n_jobs=-1, random_state=42)
+gs.fit(train_input, train_target)
+
+from scipy.stats import uniform, randint
+
+rgen = randint(0, 10)
+rgen.rvs(10)
+
+np.unique(rgen.rvs(1000), return_counts=True)
+ugen = uniform(0, 1)
+ugen.rvs(10)
+
+params = {'min_impurity_decrease': uniform(0.0001, 0.001),
+          'max_depth': randint(20, 50),
+          'min_samples_split': randint(2, 25),
+          'min_samples_leaf': randint(1, 25),
+          }
+
+from sklearn.model_selection import RandomizedSearchCV
+
+gs = RandomizedSearchCV(DecisionTreeClassifier(random_state=42), params,
+                        n_iter=100, n_jobs=-1, random_state=42)
+gs.fit(train_input, train_target)
+
+print(gs.best_params_)
+print(gs.best_score_)
+print(np.max(gs.cv_results_['mean_test_score']))
+
+dt = gs.best_estimator_
+print(dt.score(test_input, test_target))
