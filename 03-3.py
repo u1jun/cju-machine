@@ -15,3 +15,78 @@ perch_weight = np.array(
      820.0, 850.0, 900.0, 1015.0, 820.0, 1100.0, 1000.0, 1100.0,
      1000.0, 1000.0]
      )
+
+from sklearn.model_selection import train_test_split
+
+train_input, test_input, train_target, test_target = train_test_split(perch_full, perch_weight, random_state=42)
+
+from sklearn.preprocessing import PolynomialFeatures
+poly = PolynomialFeatures()
+poly.fit([[2, 3]])
+print(poly.transform([[2, 3]]))
+
+poly = PolynomialFeatures(include_bias=False)
+poly.fit([[2, 3]])
+print(poly.transform([[2, 3]]))
+
+poly = PolynomialFeatures(include_bias=False)
+
+poly.fit(train_input)
+train_poly = poly.transform(train_input)
+
+poly.get_feature_names_out()
+test_poly = poly.transform(test_input)
+
+from sklearn.linear_model import LinearRegression
+
+lr = LinearRegression()
+lr.fit(train_poly, train_target)
+print(lr.score(train_poly, train_target))
+
+print(lr.score(test_poly, test_target))
+
+poly = PolynomialFeatures(degree=5, include_bias=False)
+
+poly.fit(train_input)
+train_poly = poly.transform(train_input)
+test_poly = poly.transform(test_input)
+
+lr.fit(train_poly, train_target)
+print(lr.score(train_poly, train_target))
+
+from sklearn.preprocessing import StandardScaler
+
+ss = StandardScaler()
+ss.fit(train_poly)
+
+train_scaled = ss.transform(train_poly)
+test_scaled = ss.transform(test_poly)
+
+from sklearn.linear_model import Ridge
+
+ridge = Ridge()
+ridge.fit(train_scaled, train_target)
+print(ridge.score(train_scaled, train_target))
+print(ridge.score(test_scaled, test_target))
+
+import matplotlib.pyplot as plt
+
+train_score = []
+test_score = []
+
+alpha_list = [0.001, 0.01, 0.1, 1, 10, 100]
+for alpha in alpha_list:
+    # 릿지 모델을 만듭니다
+    ridge = Ridge(alpha=alpha)
+    # 릿지 모델을 훈련합니다
+    ridge.fit(train_scaled, train_target)
+    # 훈련 점수와 테스트 점수를 저장합니다
+    train_score.append(ridge.score(train_scaled, train_target))
+    test_score.append(ridge.score(test_scaled, test_target))
+
+
+plt.plot(np.log10(alpha_list), train_score)
+plt.plot(np.log10(alpha_list), test_score)
+plt.xlabel('alpha')
+plt.ylabel('R^2')
+plt.show()
